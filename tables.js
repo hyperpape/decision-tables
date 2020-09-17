@@ -3,13 +3,13 @@ const ANY = Symbol();
 function is_sound(table, states, ordinal_fn) {
     const expanded = expand(table, states, ordinal_fn);
     for (let i = 0; i < expanded.length - 1; i++) {
-	const l = expanded[i];
-	const r = expanded[i + 1];
-	if (same_condition(l, r)) {
-	    if (l[l.length - 1] !== r[r.length - 1]) {
-		return false;
-	    }
-	}
+        const l = expanded[i];
+        const r = expanded[i + 1];
+        if (same_condition(l, r)) {
+            if (l[l.length - 1] !== r[r.length - 1]) {
+                return false;
+            }
+        }
     }
     return true;
 }
@@ -20,7 +20,7 @@ function is_complete(table, states, ordinal_fn) {
     const expanded = expand(table, states, ordinal_fn);
     const expected_size = Math.pow(states.length - 1, colCount);
     if (expanded.length < expected_size) {
-	return false;
+        return false;
     }
     return distinct_rows(expanded) === expected_size;
 }
@@ -29,80 +29,71 @@ function expand(table, states, ordinal_fn) {
     const rows = [];
     const stack = [];
     for (let i = 0; i < table.length; i++) {
-	stack.push(table[i]);
+        stack.push(table[i]);
     }
     while (stack.length > 0) {
-	const row = stack.pop();
-	if (!row_needs_expansion(stack, states, row)) {
-	    rows.push(row);
-	}
+        const row = stack.pop();
+        if (!row_needs_expansion(stack, states, row)) {
+            rows.push(row);
+        }
     }
     return sort_table(rows, states, ordinal_fn);
 }
 
 function row_needs_expansion(stack, states, row) {
     for (let i = 0; i < row.length; i++) {
-	const condition = row[i];
-	if (condition === ANY) {
-	    for (let k = 0; k < states.length; k++) {
-		if (states[k] !== ANY) {
-		    const sliced = row.slice();
-		    sliced[i] = states[k];
-		    stack.push(sliced);
-		}
-	    }
-	    return true;
-	}
+        const condition = row[i];
+        if (condition === ANY) {
+            for (let k = 0; k < states.length; k++) {
+                if (states[k] !== ANY) {
+                    const sliced = row.slice();
+                    sliced[i] = states[k];
+                    stack.push(sliced);
+                }
+            }
+            return true;
+        }
     }
     return false;
 }
-	
+        
 // assume sorted
 function distinct_rows(table) {
     if (table.length === 0) {
-	return 0;
+        return 0;
     }
     let total = 1;
     for (let i = 0; i < table.length - 1; i++) {
-	const l = table[i];
-	const r = table[i + 1];
-	if (!same_row(l, r)) {
-	    total++;
-	}
+        const l = table[i];
+        const r = table[i + 1];
+        if (!same_condition(l, r)) {
+            total++;
+        }
     }
     return total;
 }
 
-function same_row(row1, row2) {
-    for (let i = 0; i < row1.length; i++) {
-	if (row1[i] !== row2[i]) {
-	    return false;
-	}
-    }
-    return true;
-}
-
 function same_condition(row1, row2) {
     for (let i = 0; i < row1.length - 1; i++) {
-	if (row1[i] !== row2[i]) {
-	    return false;
-	}
+        if (row1[i] !== row2[i]) {
+            return false;
+        }
     }
     return true;
 }
     
 function sort_table(table, states, fn) {
     if (!fn) {
-	fn = state_ordinal;
+        fn = state_ordinal;
     }
     table.sort((x, y) => {
-	for (let i = 0; i < x.length; i++) {
-	    const cmp = fn(x[i], states) - fn(y[i], states);
-	    if (cmp != 0) {
-		return cmp;
-	    }
-	}
-	return 0;
+        for (let i = 0; i < x.length; i++) {
+            const cmp = fn(x[i], states) - fn(y[i], states);
+            if (cmp != 0) {
+                return cmp;
+            }
+        }
+        return 0;
     });
     return table;
 }
