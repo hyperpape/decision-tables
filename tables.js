@@ -1,36 +1,4 @@
 const ANY = Symbol();
-const T = Symbol();
-const F = Symbol();
-
-const boolean_states = [T, F];
-
-const small_table = [
-    [ true, 1],
-    [ false, 2]
-];
-
-const medium_table = [
-    [ true, true, true, 0],
-    [ true, true, false, 1],
-    [ false, true, true, 0],
-    [ false, true, false, 3],
-    [ false, false, ANY, 2],
-    [ true, false, true, 4],
-    [ true, false, false, 5]
-];
-
-const incomplete = [
-    [ true, true, true, 0],
-    [ false, false, ANY, 2],
-    [ true, false, false, 5]
-];
-
-
-const unsound = [
-    [ true, 1],
-    [ false, 1],
-    [ true, 2]
-];
 
 function is_sound(table, states) {
     const expanded = expand(table, states);
@@ -146,6 +114,39 @@ function state_ordinal(state, states) {
 }
 
 /* Tests 
+
+const T = Symbol();
+const F = Symbol();
+
+const boolean_states = [T, F];
+
+const small_table = [
+    [ true, 1],
+    [ false, 2]
+];
+
+const medium_table = [
+    [ true, true, true, 0],
+    [ true, true, false, 1],
+    [ false, true, true, 0],
+    [ false, true, false, 3],
+    [ false, false, ANY, 2],
+    [ true, false, true, 4],
+    [ true, false, false, 5]
+];
+
+const incomplete = [
+    [ true, true, true, 0],
+    [ false, false, ANY, 2],
+    [ true, false, false, 5]
+];
+
+const unsound = [
+    [ true, 1],
+    [ false, 1],
+    [ true, 2]
+];
+
 console.log(is_sound(small_table, boolean_states));
 console.log(is_complete(small_table, boolean_states));
 
