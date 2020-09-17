@@ -4,7 +4,7 @@ const F = Symbol();
 
 const boolean_states = [T, F];
 
-const complete_table = [
+const small_table = [
     [ true, 1],
     [ false, 2]
 ];
@@ -19,6 +19,32 @@ const medium_table = [
     [ true, false, false, 5]
 ];
 
+const incomplete = [
+    [ true, true, true, 0],
+    [ false, false, ANY, 2],
+    [ true, false, false, 5]
+];
+
+
+const unsound = [
+    [ true, 1],
+    [ false, 1],
+    [ true, 2]
+];
+
+function is_sound(table, states) {
+    const expanded = expand(table, states);
+    for (let i = 0; i < expanded.length - 1; i++) {
+	const l = expanded[i];
+	const r = expanded[i + 1];
+	if (same_condition(l, r)) {
+	    if (l[l.length - 1] !== r[r.length - 1]) {
+		return false;
+	    }
+	}
+    }
+    return true;
+}
 
 function is_complete(table, states) {
     // YOLO: error checking
@@ -84,6 +110,15 @@ function same_row(row1, row2) {
     }
     return true;
 }
+
+function same_condition(row1, row2) {
+    for (let i = 0; i < row1.length - 1; i++) {
+	if (row1[i] !== row2[i]) {
+	    return false;
+	}
+    }
+    return true;
+}
     
 function sort_table(table, states) {
     table.sort((x, y) => {
@@ -110,3 +145,13 @@ function state_ordinal(state, states) {
     }
 }
 
+/* Tests 
+console.log(is_sound(small_table, boolean_states));
+console.log(is_complete(small_table, boolean_states));
+
+console.log(is_sound(medium_table, boolean_states));
+console.log(is_complete(medium_table, boolean_states));
+
+console.log(is_sound(unsound, boolean_states));
+console.log(is_complete(incomplete, boolean_states));
+*/
