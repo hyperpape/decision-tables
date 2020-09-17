@@ -1,7 +1,7 @@
 const ANY = Symbol();
 
-function is_sound(table, states) {
-    const expanded = expand(table, states);
+function is_sound(table, states, ordinal_fn) {
+    const expanded = expand(table, states, ordinal_fn);
     for (let i = 0; i < expanded.length - 1; i++) {
 	const l = expanded[i];
 	const r = expanded[i + 1];
@@ -14,17 +14,18 @@ function is_sound(table, states) {
     return true;
 }
 
-function is_complete(table, states) {
+function is_complete(table, states, ordinal_fn) {
     // YOLO: error checking
     const colCount = table[0].length - 1;
-    const expanded = expand(table, states);
-    if (expanded.length < Math.pow(states.length, colCount)) {
+    const expanded = expand(table, states, ordinal_fn);
+    const expected_size = Math.pow(states.length - 1, colCount);
+    if (expanded.length < expected_size) {
 	return false;
     }
-    return (distinct_rows(expanded) === Math.pow(states.length, colCount));
+    return distinct_rows(expanded) === expected_size;
 }
 
-function expand(table, states) {
+function expand(table, states, ordinal_fn) {
     const rows = [];
     const stack = [];
     for (let i = 0; i < table.length; i++) {
@@ -36,7 +37,7 @@ function expand(table, states) {
 	    rows.push(row);
 	}
     }
-    return sort_table(rows, states);
+    return sort_table(rows, states, ordinal_fn);
 }
 
 function row_needs_expansion(stack, states, row) {
@@ -44,9 +45,11 @@ function row_needs_expansion(stack, states, row) {
 	const condition = row[i];
 	if (condition === ANY) {
 	    for (let k = 0; k < states.length; k++) {
-		const sliced = row.slice();
-		sliced[i] = states[k];
-		stack.push(sliced);
+		if (states[k] !== ANY) {
+		    const sliced = row.slice();
+		    sliced[i] = states[k];
+		    stack.push(sliced);
+		}
 	    }
 	    return true;
 	}
@@ -88,10 +91,13 @@ function same_condition(row1, row2) {
     return true;
 }
     
-function sort_table(table, states) {
+function sort_table(table, states, fn) {
+    if (!fn) {
+	fn = state_ordinal;
+    }
     table.sort((x, y) => {
 	for (let i = 0; i < x.length; i++) {
-	    const cmp = state_ordinal(x[i], states) - state_ordinal(y[i], states);
+	    const cmp = fn(x[i], states) - fn(y[i], states);
 	    if (cmp != 0) {
 		return cmp;
 	    }
@@ -102,23 +108,13 @@ function sort_table(table, states) {
 }
 
 function state_ordinal(state, states) {
-    if (state === true) {
-	return 0;
-    }
-    else if (state === ANY) {
-	return 1;
-    }
-    else if (state === false) {
-	return 2;
-    }
+    return states.indexOf(state);
 }
 
-/* Tests 
 
-const T = Symbol();
-const F = Symbol();
+// Tests
 
-const boolean_states = [T, F];
+const boolean_states = [true, false, ANY];
 
 const small_table = [
     [ true, 1],
@@ -147,12 +143,36 @@ const unsound = [
     [ true, 2]
 ];
 
+console.log("True tests coming up");
 console.log(is_sound(small_table, boolean_states));
 console.log(is_complete(small_table, boolean_states));
 
 console.log(is_sound(medium_table, boolean_states));
 console.log(is_complete(medium_table, boolean_states));
 
+console.log("Now false");
 console.log(is_sound(unsound, boolean_states));
 console.log(is_complete(incomplete, boolean_states));
-*/
+
+const non_bool_table = [
+    [ 1, 2, 5],
+    [ 2, 3, 4],
+    [ 1, 2, 3] 
+];
+
+const non_bool_sound_complete = [
+    [1, 2, 3],
+    [1, 3, 5],
+    [1, 1, 4],
+    [2, ANY, 1],
+    [3, 1, 2],
+    [3, 2, 3],
+    [3, 3, 4]
+]
+
+console.log(is_sound(non_bool_table, [1, 2, 3, ANY]));
+console.log(is_complete(non_bool_table, [1, 2, 3, ANY]));
+
+console.log("Now true again");
+console.log(is_sound(non_bool_sound_complete, [1, 2, 3, ANY]));
+console.log(is_complete(non_bool_sound_complete, [1, 2, 3, ANY]));
